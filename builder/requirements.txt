@@ -1,4 +1,4 @@
 # Required Python packages get listed here, one per line.
 # Reccomended to lock the version number to avoid unexpected changes.
 
-runpod==0.10.0
+runpod @  git+https://github.com/runpod/runpod-python@multijob2#egg=runpod

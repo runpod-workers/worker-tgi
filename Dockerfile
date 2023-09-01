@@ -1,10 +1,7 @@
 # Base image
-FROM ghcr.io/huggingface/text-generation-inference:0.9
+FROM ghcr.io/huggingface/text-generation-inference:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
-
-# Use bash shell with pipefail option
-# SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Set the working directory
 WORKDIR /
@@ -24,14 +21,12 @@ RUN python3 -m pip install --upgrade pip && \
 ADD src .
 
 # Download the model
-RUN python3 /usr/src/server/text_generation_server/cli.py download-weights WizardLM/WizardCoder-15B-V1.0
+RUN python3 /usr/src/server/text_generation_server/cli.py download-weights Weni/WeniGPT-L-70
 
 COPY src/server.py /opt/conda/lib/python3.9/site-packages/text_generation_server/server.py 
 
-# Including an entrypoint
-ENTRYPOINT ["/usr/bin/env"]
+# Quick temporary updates
+RUN pip install git+https://github.com/runpod/runpod-python@a1#egg=runpod --compile
 
-# CMD python3 -u /handler.py
-CMD sleep infinity
-
-#  /usr/src/server/text_generation_server
+# Start the handler
+CMD python3 -u /handler.py

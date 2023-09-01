@@ -31,7 +31,7 @@ if dtype is not None and quantize is not None:
     )
 
 # Serve the hugging face model with text-generation-server
-MODEL_ID = 'WizardLM/WizardCoder-15B-V1.0'
+MODEL_ID = 'Weni/WeniGPT-L-70'
 REVISION = None
 SHARDED = False
 TRUST_REMOTE_CODE = True
@@ -45,7 +45,7 @@ text_generation_inference = server.serve(
 text_generation_inference['serve_inner']()
 
 
-def handler_fully_utilized() -> bool:
+def concurrency_controller() -> bool:
     # Compute pending sequences
     cache_keys = text_generation_inference['cache'].cache.keys()
     return len(cache_keys) > 10
@@ -73,7 +73,11 @@ async def handler(job):
 
     # Hugging face has built-in validation for parameter types.
     # https://github.com/huggingface/text-generation-inference/blob/5a1512c0253e759fb07142029127292d639ab117/clients/python/text_generation/types.py#L43
-    Parameters(**sampling_params)
+    # Parameters(**sampling_params)
+
+    # Create the client
+    from text_generation import Client
+    client = Client("http://127.0.0.1:8080")
 
     # Enable HTTP Streaming
     async def stream_output():
@@ -96,7 +100,8 @@ async def handler(job):
     else:
         return await submit_output()
 
-runpod.serverless.start({"handler": handler, "handler_fully_utilized": handler_fully_utilized})
-
-# python /usr/src/server/text_generation_server/cli.py download-weights WizardLM/WizardCoder-15B-V1.0
-# python /usr/src/server/text_generation_server/cli.py serve WizardLM/WizardCoder-15B-V1.0
+runpod.serverless.start({
+    "handler": handler, 
+    "concurrency_controller": concurrency_controller, 
+    "return_aggregate_stream": True
+})

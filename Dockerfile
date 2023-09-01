@@ -2,9 +2,6 @@
 FROM ghcr.io/huggingface/text-generation-inference:latest
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update to python 3.10
-RUN conda install python=3.10
-
 # Set the working directory
 WORKDIR /
 

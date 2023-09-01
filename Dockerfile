@@ -28,7 +28,7 @@ RUN python3 /usr/src/server/text_generation_server/cli.py download-weights Weni/
 COPY src/server.py /opt/conda/lib/python3.9/site-packages/text_generation_server/server.py 
 
 # Quick temporary updates
-RUN pip install git+https://github.com/runpod/runpod-python@a1#egg=runpod --compile
+RUN pip install git+https://github.com/runpod/runpod-python@a2#egg=runpod --compile
 
 # Start the handler
 CMD python3 -u /handler.py

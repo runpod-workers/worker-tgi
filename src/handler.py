@@ -1,110 +1,78 @@
 #!/usr/bin/env python
 ''' Contains the handler function that will be called by the serverless. '''
 
+from typing import Generator
 import runpod
-import asyncio
-
-# Import here after the logger is added to log potential import exceptions
-from text_generation_server import server
-from text_generation_server.tracing import setup_tracing
-from enum import Enum
+import os
 
 # For download the weights
+from text_generation import Client
 from text_generation_server.cli import download_weights
 
-class Quantization(str, Enum):
-    bitsandbytes = "bitsandbytes"
-    gptq = "gptq"
+# Prepare global variables
+JOBS = set()
+TGI_LOCAL_PORT = int(os.environ.get('TGI_LOCAL_PORT', 8080))
 
-class Dtype(str, Enum):
-    float16 = "float16"
-    bloat16 = "bfloat16"
-
-QUANTIZE = Quantization.bitsandbytes
-DTYPE = Dtype.bloat16
- 
-# Downgrade enum into str for easier management later on
-quantize = None # None if QUANTIZE is None else QUANTIZE.value
-dtype = None if DTYPE is None else DTYPE.value
-
-if dtype is not None and quantize is not None:
-    raise RuntimeError(
-        "Only 1 can be set between `dtype` and `quantize`, as they both decide how goes the final model."
-    )
-
-# Serve the hugging face model with text-generation-server
-MODEL_ID = 'meta-llama/Llama-2-7b-chat-hf'
-REVISION = 'main'
-SHARDED = False
-TRUST_REMOTE_CODE = True
-UDS_PATH = "/tmp/text-generation-server"
-text_generation_inference = server.serve(
-    MODEL_ID, REVISION, SHARDED, quantize, dtype, TRUST_REMOTE_CODE, UDS_PATH, 
-)
-
-# https://github.com/huggingface/text-generation-inference/blob/main/server/text_generation_server/server.py#L99
-# We need to keep track of the size of the 'next_batch' once it approaches some number N, then we should auto-scale.
-text_generation_inference['start_serving']()
+# Create the client
+client = Client("http://127.0.0.1:{}".format(TGI_LOCAL_PORT))
 
 def concurrency_controller() -> bool:
-    # Compute pending sequences
-    cache_keys = text_generation_inference['cache'].cache.keys()
-    return len(cache_keys) > 10
+    # Handle at most 100 jobs at a time.
+    return len(JOBS) > 100
 
-
-async def handler(job):
+async def handler_streaming(job: dict) -> Generator[dict[str, list], None, None]:
     '''
     This is the handler function that will be called by the serverless.
     ''' 
-    # Start the server.
-    if text_generation_inference['started'] == False:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        asyncio.ensure_future(text_generation_inference['serve_inner']())
-
     # Get job input
     job_input = job['input']
 
     # Prompts
     prompt = job_input['prompt']
 
-    # Streaming
-    streaming = job_input.get('streaming', False)
-
     # Validate the inputs
     sampling_params = job_input.get('sampling_params', {})
 
-    # Hugging face has built-in validation for parameter types.
-    # https://github.com/huggingface/text-generation-inference/blob/5a1512c0253e759fb07142029127292d639ab117/clients/python/text_generation/types.py#L43
-    # Parameters(**sampling_params)
+    # Add job to the set.
+    JOBS.add(job['id'])
 
-    # Create the client
-    from text_generation import Client
-    client = Client("http://127.0.0.1:8080")
+     # Include metrics in the highest level for the job output for aggregrate.
+    def aggregate_function(streamed_outputs):
+        aggregate_output = ""
+        for stream in streamed_outputs:
+            aggregate_output += stream['text']
 
-    # Enable HTTP Streaming
-    async def stream_output():
-        # Streaming case
-        async for response in client.generate_stream(prompt, **sampling_params):
-            if not response.token.special:
-                text_outputs = response.token.text
-                ret = {"text": text_outputs}
-                yield ret
+        # Aggregate metrics to expose to the user
+        input_tokens = -1 # TBD
+        output_tokens = -1 # TBD
 
-    # Regular submission
-    async def submit_output():
-        # Non-streaming case
-        response = await client.generate(prompt, **sampling_params).generated_text
-        ret = {"outputs": response.generated_text}
-        return ret
+        return {
+            "text": aggregate_output,
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
+        }
 
-    if streaming:
-        return await stream_output()
-    else:
-        return await submit_output()
+    # Streaming case
+    async for response in client.generate_stream(prompt, **sampling_params):
+        if not response.token.special:
+            text_outputs = response.token.text
+            ret = {"text": text_outputs}
 
+            # Update the aggregate transformation function
+            runpod.serverless.modules.rp_metrics.metrics_collector.update_stream_aggregate(
+                job_id=job['id'], 
+                aggregate_function=aggregate_function
+            )
+
+            yield ret
+
+    # Remove job from the set.
+    JOBS.remove(job['id'])
+
+# Start the serverless worker with appropriate settings
+print("Starting the TGI serverless worker with streaming enabled.")
 runpod.serverless.start({
-    "handler": handler, 
+    "handler": handler_streaming, 
     "concurrency_controller": concurrency_controller, 
     "return_aggregate_stream": True
 })

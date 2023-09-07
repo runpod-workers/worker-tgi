@@ -22,6 +22,8 @@ if [[ -n "${HF_MODEL_TRUST_REMOTE_CODE}" ]]; then
   export TRUST_REMOTE_CODE="${HF_MODEL_TRUST_REMOTE_CODE}"
 fi
 
+# Start the text generation server
 nohup text-generation-launcher --port 8080 &
 
-sleep infinity
+# Start the handler using python 3.10
+python3.10 -u /handler.py

@@ -19,10 +19,6 @@ RUN python3 -m pip install --upgrade pip && \
 # Add src files (Worker Template)
 ADD src .
 
-# Prepare the models inside the docker image
-ARG HUGGING_FACE_HUB_TOKEN=
-ENV HUGGING_FACE_HUB_TOKEN=$HUGGING_FACE_HUB_TOKEN
-
 # Whether to download the model into /runpod-volume or not.
 ARG DOWNLOAD_MODEL=
 ENV DOWNLOAD_MODEL=$DOWNLOAD_MODEL
@@ -59,15 +55,7 @@ RUN if [ "$DOWNLOAD_MODEL" = "1" ]; then \
     python -u /download_model.py; \
   fi
 
-# COPY src/server.py /opt/conda/lib/python3.9/site-packages/text_generation_server/server.py 
-
 # Quick temporary updates
-RUN pip install git+https://github.com/runpod/runpod-python@a2#egg=runpod --compile
-
-# Start the TGI service in the background via nohup
-# RUN HF_MODEL_ID=HF_MODEL_ID HF_MODEL_REVISION=HF_MODEL_REVISION SM_NUM_GPUS=SM_NUM_GPUS HF_MODEL_QUANTIZE=HF_MODEL_QUANTIZE HF_MODEL_TRUST_REMOTE_CODE=HF_MODEL_TRUST_REMOTE_CODE MODEL_BASE_PATH=MODEL_BASE_PATH HUGGING_FACE_HUB_TOKEN=HUGGING_FACE_HUB_TOKEN nohup text-generation-launcher --port 8080 &
-
-# Start the handler
-# CMD python3 -u /handler.py
+RUN pip install git+https://github.com/runpod/runpod-python@a1#egg=runpod --compile
 
 ENTRYPOINT ["./entrypoint.sh"]

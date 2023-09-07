@@ -53,7 +53,7 @@ async def handler_streaming(job: dict) -> Generator[dict[str, list], None, None]
         }
 
     # Streaming case
-    async for response in client.generate_stream(prompt, **sampling_params):
+    for response in client.generate_stream(prompt, **sampling_params):
         if not response.token.special:
             text_outputs = response.token.text
             ret = {"text": text_outputs}

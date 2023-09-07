@@ -58,5 +58,6 @@ RUN if [ "$DOWNLOAD_MODEL" = "1" ]; then \
 # Quick temporary updates
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
 RUN python3.10 -m pip install git+https://github.com/runpod/runpod-python@a1#egg=runpod --compile
+RUN python3.10 -m pip install text_generation
 
 ENTRYPOINT ["./entrypoint.sh"]

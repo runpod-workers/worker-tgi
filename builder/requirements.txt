@@ -2,3 +2,4 @@
 # Reccomended to lock the version number to avoid unexpected changes.
 
 runpod @ git+https://github.com/runpod/runpod-python@a2#egg=runpod 
+text_generation

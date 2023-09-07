@@ -9,6 +9,8 @@ from text_generation_server import server
 from text_generation_server.tracing import setup_tracing
 from enum import Enum
 
+# For download the weights
+from text_generation_server.cli import download_weights
 
 class Quantization(str, Enum):
     bitsandbytes = "bitsandbytes"
@@ -31,19 +33,18 @@ if dtype is not None and quantize is not None:
     )
 
 # Serve the hugging face model with text-generation-server
-MODEL_ID = 'Weni/WeniGPT-L-70'
-REVISION = None
+MODEL_ID = 'meta-llama/Llama-2-7b-chat-hf'
+REVISION = 'main'
 SHARDED = False
 TRUST_REMOTE_CODE = True
 UDS_PATH = "/tmp/text-generation-server"
 text_generation_inference = server.serve(
-    MODEL_ID, REVISION, SHARDED, quantize, dtype, TRUST_REMOTE_CODE, UDS_PATH,
+    MODEL_ID, REVISION, SHARDED, quantize, dtype, TRUST_REMOTE_CODE, UDS_PATH, 
 )
 
 # https://github.com/huggingface/text-generation-inference/blob/main/server/text_generation_server/server.py#L99
 # We need to keep track of the size of the 'next_batch' once it approaches some number N, then we should auto-scale.
-text_generation_inference['serve_inner']()
-
+text_generation_inference['start_serving']()
 
 def concurrency_controller() -> bool:
     # Compute pending sequences
@@ -54,10 +55,12 @@ def concurrency_controller() -> bool:
 async def handler(job):
     '''
     This is the handler function that will be called by the serverless.
-    '''
+    ''' 
     # Start the server.
     if text_generation_inference['started'] == False:
-        asyncio.create_task(text_generation_inference['serve_inner']())
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        asyncio.ensure_future(text_generation_inference['serve_inner']())
 
     # Get job input
     job_input = job['input']

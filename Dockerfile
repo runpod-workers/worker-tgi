@@ -56,6 +56,6 @@ RUN if [ "$DOWNLOAD_MODEL" = "1" ]; then \
   fi
 
 # Quick temporary updates
-RUN pip install git+https://github.com/runpod/runpod-python@a1#egg=runpod --compile
+RUN python3.10 -m pip install git+https://github.com/runpod/runpod-python@a1#egg=runpod --compile
 
 ENTRYPOINT ["./entrypoint.sh"]

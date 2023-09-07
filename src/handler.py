@@ -7,7 +7,7 @@ import os
 
 # For download the weights
 from text_generation import Client
-from text_generation_server.cli import download_weights
+# from text_generation_server.cli import download_weights
 
 # Prepare global variables
 JOBS = set()

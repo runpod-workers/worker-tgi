@@ -71,4 +71,3 @@ RUN pip install git+https://github.com/runpod/runpod-python@a2#egg=runpod --comp
 # CMD python3 -u /handler.py
 
 ENTRYPOINT ["./entrypoint.sh"]
-CMD sleep infinity

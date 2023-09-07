@@ -23,3 +23,5 @@ if [[ -n "${HF_MODEL_TRUST_REMOTE_CODE}" ]]; then
 fi
 
 nohup text-generation-launcher --port 8080 &
+
+sleep infinity

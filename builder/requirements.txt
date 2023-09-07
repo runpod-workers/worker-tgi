@@ -1,4 +1,3 @@
 # Required Python packages get listed here, one per line.
 # Reccomended to lock the version number to avoid unexpected changes.
 
-runpod @ git+https://github.com/runpod/runpod-python@a1#egg=runpod 

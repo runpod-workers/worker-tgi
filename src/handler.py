@@ -7,7 +7,6 @@ import os
 
 # For download the weights
 from text_generation import Client
-# from text_generation_server.cli import download_weights
 
 # Prepare global variables
 JOBS = set()
@@ -43,13 +42,13 @@ async def handler_streaming(job: dict) -> Generator[dict[str, list], None, None]
             aggregate_output += stream['text']
 
         # Aggregate metrics to expose to the user
-        input_tokens = -1 # TBD
-        output_tokens = -1 # TBD
+        # input_tokens = -1 # TBD
+        # output_tokens = -1 # TBD
 
         return {
             "text": aggregate_output,
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
+            # "input_tokens": input_tokens,
+            # "output_tokens": output_tokens,
         }
 
     # Streaming case

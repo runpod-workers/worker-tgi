@@ -42,9 +42,6 @@ ENV HF_MODEL_TRUST_REMOTE_CODE=$HF_MODEL_TRUST_REMOTE_CODE
 ARG MODEL_BASE_PATH="/runpod-volume/"
 ENV MODEL_BASE_PATH=$MODEL_BASE_PATH
 
-ARG MODEL_FOLDER=
-ENV MODEL_FOLDER=MODEL_FOLDER
-
 ARG HUGGING_FACE_HUB_TOKEN=
 ENV HUGGING_FACE_HUB_TOKEN=$HUGGING_FACE_HUB_TOKEN
 
@@ -53,9 +50,9 @@ ENV HF_DATASETS_CACHE="/runpod-volume/huggingface-cache/datasets"
 ENV HUGGINGFACE_HUB_CACHE="/runpod-volume/huggingface-cache/hub"
 ENV TRANSFORMERS_CACHE="/runpod-volume/huggingface-cache/hub"
 
-# Run the Python script to download the model only if DOWNLOAD_MODEL is equal to 1
+# Conditionally download the model weights based on DOWNLOAD_MODEL
 RUN if [ "$DOWNLOAD_MODEL" = "1" ]; then \
-    python -u /download_model.py; \
+    text-generation-server download-weights $HF_MODEL_ID; \
   fi
 
 # Quick temporary updates

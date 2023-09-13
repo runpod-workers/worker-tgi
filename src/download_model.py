@@ -16,7 +16,7 @@ if HUGGING_FACE_HUB_TOKEN:
 snapshot_download(
     MODEL_NAME,
     revision=MODEL_REVISION,
-    local_dir=f"{MODEL_BASE_PATH}{MODEL_NAME.split('/')[1]}",
-    cache_dir=f"{MODEL_BASE_PATH}{MODEL_NAME.split('/')[1]}",
+    local_dir=os.path.join(MODEL_BASE_PATH, MODEL_NAME.split('/')[1]),
+    cache_dir=os.path.join(MODEL_BASE_PATH, MODEL_NAME.split('/')[1]),
     **download_kwargs
 )

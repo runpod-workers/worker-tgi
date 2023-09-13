@@ -17,7 +17,7 @@ client = Client("http://127.0.0.1:{}".format(TGI_LOCAL_PORT))
 
 def concurrency_controller() -> bool:
     # Handle at most 100 jobs at a time.
-    return len(JOBS) > 100
+    return len(JOBS) > 20
 
 async def handler_streaming(job: dict) -> Generator[dict[str, list], None, None]:
     '''

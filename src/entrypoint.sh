@@ -22,6 +22,22 @@ if [[ -n "${HF_MODEL_TRUST_REMOTE_CODE}" ]]; then
   export TRUST_REMOTE_CODE="${HF_MODEL_TRUST_REMOTE_CODE}"
 fi
 
+if [[ -n "${HF_MAX_TOTAL_TOKENS}" ]]; then
+  export MAX_TOTAL_TOKENS="${HF_MAX_TOTAL_TOKENS}"
+fi
+
+if [[ -n "${HF_MAX_INPUT_LENGTH}" ]]; then
+  export MAX_INPUT_LENGTH="${HF_MAX_INPUT_LENGTH}"
+fi
+
+if [[ -n "${HF_MAX_BATCH_TOTAL_TOKENS}" ]]; then
+  export MAX_BATCH_TOTAL_TOKENS="${HF_MAX_BATCH_TOTAL_TOKENS}"
+fi
+
+if [[ -n "${HF_MAX_BATCH_PREFILL_TOKENS}" ]]; then
+  export MAX_BATCH_PREFILL_TOKENS="${HF_MAX_BATCH_PREFILL_TOKENS}"
+fi
+
 # Start the text generation server
 nohup text-generation-launcher --port 8080 &
 

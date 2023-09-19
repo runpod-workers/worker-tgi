@@ -27,6 +27,9 @@
 #### llama2 13B Chat, 4bit:
 `docker build   --build-arg HF_MODEL_ID="TheBloke/Llama-2-13b-Chat-GPTQ"   --build-arg HF_MODEL_REVISION="main"   --build-arg SM_NUM_GPUS="1"   --build-arg HF_MODEL_QUANTIZE="gptq"   --build-arg HF_MODEL_TRUST_REMOTE_CODE="true" --build-arg HUGGING_FACE_HUB_TOKEN="your_hugging_face_token_here" --build-arg DOWNLOAD_MODEL="1" .`
 
+#### llama2 70B Chat, 4bit:
+`docker build   --build-arg HF_MODEL_ID="TheBloke/Llama-2-70b-Chat-GPTQ"   --build-arg HF_MODEL_REVISION="main"   --build-arg SM_NUM_GPUS="1"   --build-arg HF_MODEL_QUANTIZE="gptq"   --build-arg HF_MODEL_TRUST_REMOTE_CODE="true" --build-arg HUGGING_FACE_HUB_TOKEN="your_hugging_face_token_here" --build-arg DOWNLOAD_MODEL="1" .`
+
 Please make sure to replace your_hugging_face_token_here with your actual Hugging Face token to enable model downloads that require it.
 
 Ensure that you have Docker installed and properly set up before running the docker build commands. Once built, you can deploy this serverless worker in your desired environment with confidence that it will automatically scale based on demand. For further inquiries or assistance, feel free to contact our support team.

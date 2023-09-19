@@ -4,6 +4,7 @@
 from typing import Generator
 import runpod
 import os
+import time
 
 # For download the weights
 from text_generation import Client
@@ -14,6 +15,19 @@ TGI_LOCAL_PORT = int(os.environ.get('TGI_LOCAL_PORT', 8080))
 
 # Create the client
 client = Client("http://127.0.0.1:{}".format(TGI_LOCAL_PORT))
+
+# Wait for the hugging face TGI worker to start running.
+while True:
+    try:
+        client.generate("Why is the sky blue?").generated_text
+        print("Successfully cold booted the hugging face text generation inference server!")
+
+        # Break from the while loop
+        break
+
+    except Exception as e:
+        print("The hugging face text generation inference server is still cold booting...")
+        time.sleep(5)
 
 def concurrency_controller() -> bool:
     # Handle at most 100 jobs at a time.

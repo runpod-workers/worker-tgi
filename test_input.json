@@ -1,0 +1,10 @@
+{
+  "input": {
+    "prompt": "Why is the sky blue?",
+    "sampling_params": {
+      "max_new_tokens": 100,
+      "temperature": 0.7,
+      "top_p": 0.95
+    }
+  }
+}

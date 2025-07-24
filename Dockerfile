@@ -19,6 +19,12 @@ RUN python3 -m pip install --upgrade pip && \
 # Add src files (Worker Template)
 ADD src .
 
+# Copy test_input.json for RunPod SDK automated testing
+COPY test_input.json /
+
+# Make entrypoint.sh executable
+RUN chmod +x /entrypoint.sh
+
 # Whether to download the model into /runpod-volume or not.
 ARG DOWNLOAD_MODEL=
 ENV DOWNLOAD_MODEL=$DOWNLOAD_MODEL
@@ -62,6 +68,9 @@ ENV HF_DATASETS_CACHE="/runpod-volume/huggingface-cache/datasets"
 ENV HUGGINGFACE_HUB_CACHE="/runpod-volume/huggingface-cache/hub"
 ENV TRANSFORMERS_CACHE="/runpod-volume/huggingface-cache/hub"
 
+# Set a default model ID if none is provided
+ENV HF_MODEL_ID=${HF_MODEL_ID:-"facebook/opt-125m"}
+
 # Conditionally download the model weights based on DOWNLOAD_MODEL
 RUN if [ "$DOWNLOAD_MODEL" = "1" ]; then \
     text-generation-server download-weights $HF_MODEL_ID; \
@@ -69,7 +78,7 @@ RUN if [ "$DOWNLOAD_MODEL" = "1" ]; then \
 
 # Quick temporary updates
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
-RUN python3.10 -m pip install git+https://github.com/runpod/runpod-python@a1#egg=runpod --compile
+RUN python3.10 -m pip install runpod==1.7.13 --no-cache-dir
 RUN python3.10 -m pip install text_generation
 
 ENTRYPOINT ["./entrypoint.sh"]
